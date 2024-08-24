@@ -24,5 +24,4 @@ enet = "*"
 enet_stm32 = "*"
 
 [[pins]]
-enet = { path='../..' }
-enet_stm32 = { path='../../drivers/enet_stm32' }
+enet_stm32 = { path='..' }
