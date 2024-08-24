@@ -19,7 +19,8 @@ Extra_Buffers = {type = "Integer", first = 0, last = 1024, default = 8}
 
 [[actions]]
 type = "test"
-command = ["alr", "-C", "../../demos/ping_text_io", "build"]
+command = ["alr", "build"]
+directory = "ping_text_io"
 
 [[depends-on]]
 enet = "^1.0.0"
