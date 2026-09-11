@@ -666,7 +666,7 @@ package body Net.STM32_Interfaces is
         (case HCLK is
             when  60e6 .. 100e6 - 1 => 2#000#,   --  AHB clock / 42
             when 100e6 .. 150e6 - 1 => 2#001#,   --  AHB clock / 62
-            when  20e6 ..  35e6 - 1 => 2#010#,   --  AHB clock / 16
+            when   0e6 ..  35e6 - 1 => 2#010#,   --  AHB clock / 16
             when  35e6 ..  60e6 - 1 => 2#011#,   --  AHB clock / 26
             when 150e6 .. 240e6 - 1 => 2#100#,   --  AHB clock / 102
             when others => raise Program_Error);
