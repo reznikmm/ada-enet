@@ -5,6 +5,7 @@
 
 with Ada.Text_IO;
 with Ada.Real_Time;
+with Setup_Pll;
 
 with Net.Buffers;
 with Net.DHCP;
