@@ -9,6 +9,7 @@ library project Anet_STM32FXXX  is
 
    for Source_Dirs use
     ("src",
+     "config",
      "drivers/enet_stm32/src",
      "drivers/enet_stm32/config",
      "ethernet/source",

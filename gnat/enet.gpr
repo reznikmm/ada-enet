@@ -17,7 +17,7 @@ project Enet is
    Excluded_Files := ();
 
    case Enet_Config.Default_Random is
-      when "null" =>
+      when "none" =>
          Excluded_Files := Excluded_Files & ("net-uint32_randoms.ads");
       when others =>
          null;

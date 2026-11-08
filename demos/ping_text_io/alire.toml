@@ -13,7 +13,7 @@ executables = ["ping_text_io"]
 enet_stm32.Extra_Buffers = 8
 enet_stm32.TX_Ring_Size = 8
 enet_stm32.RX_Ring_Size = 8
-#enet.Default_Random = "null"
+#enet.Default_Random = "none"
 cortex_m.core = "m4f"
 
 [build-profiles]

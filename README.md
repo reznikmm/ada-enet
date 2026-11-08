@@ -32,6 +32,33 @@ the MDIO interface defined there.
 To use the library with Alire just run `alr with enet` (for the core part).
 To use the STM32 driver run `alr with enet_stm32`.
 
+WiFi drivers for the Raspberry Pi Pico W (CYW43439) and BCM43362 modules
+(such as EMW3165) are provided by the
+[SDPCM](https://github.com/reznikmm/sdpcm) project (`enet_picowi` and
+`enet_bcm43362` crates).
+
+### Configuration
+
+The crate has the following configuration variables:
+
+* `Default_Random` - implementation of `Net.Utils.Default_Random`:
+  `"discrete"` (based on `Ada.Numerics.Discrete_Random`, the default) or
+  `"none"` (a dummy one for applications that always override
+  `Net.Utils.Random`).
+* `Headroom` - bytes reserved in each packet buffer before the Ethernet
+  header (0 by default). A driver could put a link layer header there
+  without moving the packet data, see `Net.Buffers.Get_Buffer_Address`.
+* `Tailroom` - extra bytes after the packet data (0 by default), for
+  instance, for DMA transfers rounded up to a block size.
+
+For example, the `sdpcm` WiFi driver uses:
+
+```toml
+[configuration.values]
+enet.Headroom = 22
+enet.Tailroom = 8
+```
+
 See more details on [the Wiki](https://github.com/stcarrez/ada-enet/wiki).
 
 ## Examples

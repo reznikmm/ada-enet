@@ -18,6 +18,8 @@
 with System;
 with Net.Headers;
 
+with Enet_Config;
+
 --  === Network Buffers ===
 --  The <b>Net.Buffers</b> package provides support for network buffer management.
 --  A network buffer can hold a single packet frame so that it is limited to 1500 bytes
@@ -99,16 +101,24 @@ package Net.Buffers is
    --  The size of a packet buffer for memory allocation.
    NET_ALLOC_SIZE : constant Uint32;
 
-   --  The maximum available size of the packet buffer for the application.
+   --  The maximum available size of the packet buffer for the application
+   --  (from the Ethernet header to the end of the buffer).
    --  We always have NET_BUF_SIZE < NET_ALLOC_SIZE.
    NET_BUF_SIZE   : constant Uint32;
+
+   --  The number of bytes reserved before the Ethernet header in each
+   --  buffer (see Enet_Config.Headroom).
+   HEADROOM       : constant Uint16;
 
    --  The packet type identifies the content of the packet for the serialization/deserialization.
    type Packet_Type is (RAW_PACKET, ETHER_PACKET, ARP_PACKET, IP_PACKET, UDP_PACKET, ICMP_PACKET,
                         DHCP_PACKET);
 
-   type Data_Type is array (Net.Uint16 range 0 .. 1500 + 31) of aliased Uint8 with
-     Alignment => 32;
+   type Data_Type is array
+     (Net.Uint16 range 0 .. Enet_Config.Headroom + 1500 + 31 + Enet_Config.Tailroom)
+       of aliased Uint8 with Alignment => 32;
+   --  The packet buffer: HEADROOM bytes, then the Ethernet frame starting
+   --  from Data_Type'First + HEADROOM, then the tail room.
 
    type Buffer_Type is tagged limited private;
 
@@ -139,7 +149,16 @@ package Net.Buffers is
      Post => not From.Is_Null and not To.Is_Null;
 
    --
+   --  Get the address of the Ethernet header.
    function Get_Data_Address (Buf : in Buffer_Type) return System.Address;
+
+   --  Get the address of the byte located Offset bytes before the Ethernet
+   --  header. A driver could put a link layer header of Offset bytes there
+   --  without moving the packet data.
+   function Get_Buffer_Address
+     (Buf    : in Buffer_Type;
+      Offset : in Uint16) return System.Address with
+     Pre => not Buf.Is_Null and Offset <= HEADROOM;
 
    function Get_Data_Size (Buf  : in Buffer_Type;
                            Kind : in Packet_Type) return Uint16;
@@ -290,14 +309,14 @@ private
 
    type Packet_Buffer is limited record
       Next : Packet_Buffer_Access;
-      Size : Uint16;
       Data : aliased Data_Type;
+      Size : Uint16;
    end record;
 
    type Buffer_Type is tagged limited record
       Kind   : Packet_Type := RAW_PACKET;
       Size   : Uint16 := 0;
-      Pos    : Uint16 := 0;
+      Pos    : Uint16 := Enet_Config.Headroom;
       Packet : Packet_Buffer_Access;
    end record;
 
@@ -307,6 +326,7 @@ private
    end record;
 
    NET_ALLOC_SIZE : constant Uint32 := 4 + (Packet_Buffer'Size / 8);
-   NET_BUF_SIZE   : constant Uint32 := Data_Type'Size / 8;
+   HEADROOM       : constant Uint16 := Enet_Config.Headroom;
+   NET_BUF_SIZE   : constant Uint32 := Data_Type'Size / 8 - Uint32 (HEADROOM);
 
 end Net.Buffers;

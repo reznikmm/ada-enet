@@ -18,7 +18,7 @@
 with Ada.Unchecked_Conversion;
 package body Net.Buffers is
 
-   ETHER_POS  : constant Uint16 := 0;
+   ETHER_POS  : constant Uint16 := HEADROOM;
    IP_POS     : constant Uint16 := ETHER_POS + 14;
    UDP_POS    : constant Uint16 := IP_POS + 20;  --  Note: this is wrong due to IP options.
    --  TCP_POS    : constant Uint16 := IP_POS + 24;  --  Note: this is wrong due to IP options.
@@ -148,14 +148,21 @@ package body Net.Buffers is
 
    function Get_Data_Address (Buf : in Buffer_Type) return System.Address is
    begin
-      return Buf.Packet.Data (Buf.Packet.Data'First)'Address;
+      return Buf.Packet.Data (ETHER_POS)'Address;
    end Get_Data_Address;
+
+   function Get_Buffer_Address
+     (Buf    : in Buffer_Type;
+      Offset : in Uint16) return System.Address is
+   begin
+      return Buf.Packet.Data (ETHER_POS - Offset)'Address;
+   end Get_Buffer_Address;
 
    function Get_Data_Size (Buf  : in Buffer_Type;
                            Kind : in Packet_Type) return Uint16 is
    begin
       if Buf.Size = 0 then
-         return Buf.Pos - Offsets (Kind);
+         return Buf.Pos - ETHER_POS - Offsets (Kind);
       else
          return Buf.Size - Offsets (Kind);
       end if;
@@ -163,7 +170,7 @@ package body Net.Buffers is
 
    procedure Set_Data_Size (Buf : in out Buffer_Type; Size : in Uint16) is
    begin
-      Buf.Pos  := Size + Offsets (Buf.Kind);
+      Buf.Pos  := ETHER_POS + Size + Offsets (Buf.Kind);
       Buf.Size := 0;
    end Set_Data_Size;
 
@@ -185,7 +192,7 @@ package body Net.Buffers is
                        Kind : in Packet_Type) is
    begin
       Buf.Kind := Kind;
-      Buf.Pos  := Offsets (Kind);
+      Buf.Pos  := ETHER_POS + Offsets (Kind);
    end Set_Type;
 
    --  ------------------------------
@@ -335,7 +342,7 @@ package body Net.Buffers is
    --  ------------------------------
    function Available (Buf : in Buffer_Type) return Net.Uint16 is
    begin
-      return Buf.Size - Buf.Pos;
+      return ETHER_POS + Buf.Size - Buf.Pos;
    end Available;
 
    --  ------------------------------
@@ -343,7 +350,7 @@ package body Net.Buffers is
    --  ------------------------------
    function Ethernet (Buf : in Buffer_Type) return Net.Headers.Ether_Header_Access is
    begin
-      return As_Ethernet (Buf.Packet.Data (Buf.Packet.Data'First)'Address);
+      return As_Ethernet (Buf.Packet.Data (ETHER_POS)'Address);
    end Ethernet;
 
    --  ------------------------------
@@ -351,7 +358,7 @@ package body Net.Buffers is
    --  ------------------------------
    function Arp (Buf : in Buffer_Type) return Net.Headers.Arp_Packet_Access is
    begin
-      return As_Arp (Buf.Packet.Data (Buf.Packet.Data'First)'Address);
+      return As_Arp (Buf.Packet.Data (ETHER_POS)'Address);
    end Arp;
 
    --  ------------------------------
